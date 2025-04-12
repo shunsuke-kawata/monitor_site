@@ -1,0 +1,46 @@
+services:
+
+  be-golang:
+    container_name: be-monitor
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile.be
+    env_file:
+      - .env
+    tty: true
+    stdin_open: true
+    ports:
+      - "${GOLANG_PORT}:${GOLANG_PORT}"
+    volumes:
+      - ./be/:/app
+    expose:
+      - "${GOLANG_PORT}"
+    depends_on:
+      - db-mongodb
+    networks:
+      - monitor-network
+  
+  db-mongodb:
+    container_name: db-monitor
+    image: mongo:latest
+    stdin_open: true
+  
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
+    ports:
+      - "${MONGODB_PORT}:${MONGODB_PORT}"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - monitor-network
+volumes:
+  mongo_data:
+
+networks:
+  monitor-network:
+    driver: bridge
+
